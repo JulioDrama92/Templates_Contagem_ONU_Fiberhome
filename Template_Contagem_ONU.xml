@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>6.0</version>
+    <date>2024-03-15T11:52:02Z</date>
+    <groups>
+        <group>
+            <uuid>c1e6a44c409a428794e0c7b76742c68a</uuid>
+            <name>Template API Zabbix</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <uuid>cbad445da3d94f3cb67057b35e1fc003</uuid>
+            <template>Template_Contagem_API</template>
+            <name>Template_Contagem_API</name>
+            <groups>
+                <group>
+                    <name>Template API Zabbix</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>ce440efadc154d8b8fe441a9812b0e0c</uuid>
+                    <name>Porcentagem de Itens Online</name>
+                    <type>CALCULATED</type>
+                    <key>itens.percent.on</key>
+                    <history>30d</history>
+                    <units>%</units>
+                    <params>(last(//script.count.on)/last(//script.count))*100</params>
+                    <triggers>
+                        <trigger>
+                            <uuid>18617fe7d2cf43ecbbb832d6231497ad</uuid>
+                            <expression>last(/Template_Contagem_API/itens.percent.on)&lt;=80</expression>
+                            <name>Porcentagem de Itens Online menor que 80%</name>
+                            <priority>DISASTER</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <uuid>023510a599094434b5a22e5be592abd5</uuid>
+                    <name>Quantidade Total de Itens</name>
+                    <type>DEPENDENT</type>
+                    <key>script.count</key>
+                    <delay>0</delay>
+                    <history>30d</history>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$[*].length()</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>system.run[{$CHAMA}]</key>
+                    </master_item>
+                </item>
+                <item>
+                    <uuid>b799c96773b04c5da79cf7c74efb89bc</uuid>
+                    <name>Itens Online</name>
+                    <type>DEPENDENT</type>
+                    <key>script.count.on</key>
+                    <delay>0</delay>
+                    <history>30d</history>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$[?(@.lastvalue == '1')].length()</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>system.run[{$CHAMA}]</key>
+                    </master_item>
+                </item>
+                <item>
+                    <uuid>70512c0f0d1141a693c21eb2ca25abb0</uuid>
+                    <name>Script_LastValue_Itens</name>
+                    <key>system.run[{$CHAMA}]</key>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                </item>
+            </items>
+            <macros>
+                <macro>
+                    <macro>{$CHAMA}</macro>
+                    <value>/usr/lib/zabbix/externalscripts/run_export_history.sh</value>
+                </macro>
+            </macros>
+        </template>
+    </templates>
+</zabbix_export>

@@ -1,0 +1,58 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-03-15T11:58:16Z'
+  groups:
+    - uuid: c1e6a44c409a428794e0c7b76742c68a
+      name: 'Template API Zabbix'
+  templates:
+    - uuid: cbad445da3d94f3cb67057b35e1fc003
+      template: Template_Contagem_API
+      name: Template_Contagem_API
+      groups:
+        - name: 'Template API Zabbix'
+      items:
+        - uuid: ce440efadc154d8b8fe441a9812b0e0c
+          name: 'Porcentagem de Itens Online'
+          type: CALCULATED
+          key: itens.percent.on
+          history: 30d
+          units: '%'
+          params: '(last(//script.count.on)/last(//script.count))*100'
+          triggers:
+            - uuid: 18617fe7d2cf43ecbbb832d6231497ad
+              expression: last(/Template_Contagem_API/itens.percent.on)<=80
+              name: 'Porcentagem de Itens Online menor que 80%'
+              priority: DISASTER
+        - uuid: 023510a599094434b5a22e5be592abd5
+          name: 'Quantidade Total de Itens'
+          type: DEPENDENT
+          key: script.count
+          delay: '0'
+          history: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[*].length()'
+          master_item:
+            key: 'system.run[{$CHAMA}]'
+        - uuid: b799c96773b04c5da79cf7c74efb89bc
+          name: 'Itens Online'
+          type: DEPENDENT
+          key: script.count.on
+          delay: '0'
+          history: 30d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$[?(@.lastvalue == ''1'')].length()'
+          master_item:
+            key: 'system.run[{$CHAMA}]'
+        - uuid: 70512c0f0d1141a693c21eb2ca25abb0
+          name: Script_LastValue_Itens
+          key: 'system.run[{$CHAMA}]'
+          history: 30d
+          trends: '0'
+          value_type: TEXT
+      macros:
+        - macro: '{$CHAMA}'
+          value: /usr/lib/zabbix/externalscripts/run_export_history.sh
